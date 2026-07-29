@@ -41,6 +41,7 @@ class Settings(BaseSettings):
 
     # CORS Configuration
     ALLOWED_ORIGINS: str = (
+        "https://ai-budget-expense-advisor-aa1tu0jjg-saumyap48s-projects.vercel.app,"
         "https://ai-budget-expense-advisor-hjt2lskrr-saumyap48s-projects.vercel.app,"
         "http://localhost:3000,http://127.0.0.1:3000,"
         "http://localhost:5500,http://127.0.0.1:5500,"
