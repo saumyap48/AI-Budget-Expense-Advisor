@@ -24,19 +24,19 @@ def create_app() -> FastAPI:
         redoc_url="/redoc"
     )
 
-    # CORS Middleware
+    # Request Audit Logging Middleware (registered first → runs second in stack)
+    app.add_middleware(RequestLoggingMiddleware)
+
+    # CORS Middleware — must be registered LAST so it runs FIRST on every request.
+    # Starlette processes middlewares in reverse-registration order.
+    # allow_origin_regex covers all Vercel preview deployments dynamically;
+    # no need to hardcode individual preview URLs.
     allowed_origins = [
-        "https://ai-budget-expense-advisor-aa1tu0jjg-saumyap48s-projects.vercel.app",
-        "https://ai-budget-expense-advisor-hjt2lskrr-saumyap48s-projects.vercel.app",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5500",
         "http://127.0.0.1:5500",
     ]
-    for origin in settings.origins_list:
-        if origin and origin not in allowed_origins:
-            allowed_origins.append(origin)
-
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
@@ -45,9 +45,6 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    # Request Audit Logging Middleware
-    app.add_middleware(RequestLoggingMiddleware)
 
     # Exception Handlers
     app.add_exception_handler(DomainException, domain_exception_handler)
