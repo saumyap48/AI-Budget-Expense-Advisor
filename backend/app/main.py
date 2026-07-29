@@ -29,9 +29,18 @@ def create_app() -> FastAPI:
 
     # CORS Middleware — must be registered LAST so it runs FIRST on every request.
     # Starlette processes middlewares in reverse-registration order.
-    # allow_origin_regex covers all Vercel preview deployments dynamically;
-    # no need to hardcode individual preview URLs.
+    #
+    # With allow_credentials=True, Starlette's CORSMiddleware reflects the exact
+    # requesting origin back (not a wildcard "*") for any origin that matches either
+    # allow_origins or allow_origin_regex. The regex below covers every Vercel
+    # preview and production deployment dynamically.
+    #
+    # The stable production Vercel domain is also listed explicitly in allow_origins
+    # as a belt-and-suspenders guarantee.
     allowed_origins = [
+        # Stable Vercel production domain
+        "https://ai-budget-expense-advisor.vercel.app",
+        # Local development servers
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5500",
@@ -40,6 +49,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
+        # Covers ALL *.vercel.app preview/production deployments
         allow_origin_regex=r"https://.*\.vercel\.app",
         allow_credentials=True,
         allow_methods=["*"],

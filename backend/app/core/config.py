@@ -40,9 +40,11 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-2.5-flash"
 
     # CORS Configuration
+    # NOTE: CORS is fully managed in main.py via CORSMiddleware with
+    # allow_origin_regex=r"https://.*\.vercel\.app" covering all Vercel deployments.
+    # This field is kept for reference / environment overrides.
     ALLOWED_ORIGINS: str = (
-        "https://ai-budget-expense-advisor-aa1tu0jjg-saumyap48s-projects.vercel.app,"
-        "https://ai-budget-expense-advisor-hjt2lskrr-saumyap48s-projects.vercel.app,"
+        "https://ai-budget-expense-advisor.vercel.app,"
         "http://localhost:3000,http://127.0.0.1:3000,"
         "http://localhost:5500,http://127.0.0.1:5500,"
         "http://localhost:8000,http://127.0.0.1:8000"
