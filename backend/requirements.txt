@@ -10,6 +10,12 @@ requests>=2.31.0
 google-generativeai>=0.8.0
 python-dotenv>=1.0.1
 python-multipart>=0.0.9
-passlib[bcrypt]
-bcrypt
-python-jose[cryptography]
+
+# Password hashing — Argon2id via passlib
+# Replaces passlib[bcrypt] which is incompatible with bcrypt>=4.x (passlib is unmaintained).
+# argon2-cffi provides the Argon2 C extension; passlib[argon2] wires it into CryptContext.
+passlib[argon2]>=1.7.4
+argon2-cffi>=23.1.0
+
+# JWT
+python-jose[cryptography]>=3.3.0
