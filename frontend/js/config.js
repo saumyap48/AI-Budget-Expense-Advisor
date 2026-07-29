@@ -1,5 +1,5 @@
 export const CONFIG = {
-  API_BASE_URL: 'http://localhost:8000/api/v1',
+  API_BASE_URL: 'https://ai-budget-expense-advisor-4.onrender.com/api/v1',
   DEFAULT_PAGE_SIZE: 20,
   CATEGORIES: [
     'Food', 'Shopping', 'Transport', 'Medical',
