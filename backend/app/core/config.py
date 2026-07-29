@@ -41,9 +41,10 @@ class Settings(BaseSettings):
 
     # CORS Configuration
     ALLOWED_ORIGINS: str = (
-        "http://127.0.0.1:5500,http://localhost:5500,"
-        "http://127.0.0.1:8000,http://localhost:8000,"
-        "http://127.0.0.1:3000,http://localhost:3000"
+        "https://ai-budget-expense-advisor-hjt2lskrr-saumyap48s-projects.vercel.app,"
+        "http://localhost:3000,http://127.0.0.1:3000,"
+        "http://localhost:5500,http://127.0.0.1:5500,"
+        "http://localhost:8000,http://127.0.0.1:8000"
     )
 
     @property

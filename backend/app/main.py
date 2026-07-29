@@ -25,9 +25,21 @@ def create_app() -> FastAPI:
     )
 
     # CORS Middleware
+    allowed_origins = [
+        "https://ai-budget-expense-advisor-hjt2lskrr-saumyap48s-projects.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+    ]
+    for origin in settings.origins_list:
+        if origin and origin not in allowed_origins:
+            allowed_origins.append(origin)
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.origins_list or ["*"],
+        allow_origins=allowed_origins,
+        allow_origin_regex=r"https://.*\.vercel\.app",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
