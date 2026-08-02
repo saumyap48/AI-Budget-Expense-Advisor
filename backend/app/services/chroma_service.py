@@ -3,10 +3,10 @@ import json
 import math
 import re
 from typing import List, Dict, Any, Optional
-from backend.app.core.config import settings
-from backend.app.core.logging import ai_logger, error_logger
-from backend.app.utils.text_utils import build_expense_document
-from backend.app.models.expense import Expense
+from app.core.config import settings
+from app.core.logging import ai_logger, error_logger
+from app.utils.text_utils import build_expense_document
+from app.models.expense import Expense
 
 HAS_CHROMADB = False
 try:

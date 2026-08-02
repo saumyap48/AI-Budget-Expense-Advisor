@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from passlib.context import CryptContext
 import jwt
-from backend.app.core.config import settings
-from backend.app.core.logging import logger, error_logger
+from app.core.config import settings
+from app.core.logging import logger, error_logger
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

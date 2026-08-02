@@ -1,11 +1,11 @@
 from typing import List, Optional, Tuple, Dict, Any
 from sqlalchemy.orm import Session
-from backend.app.models.expense import Expense
-from backend.app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseFilter
-from backend.app.repositories.expense_repository import ExpenseRepository
-from backend.app.services.chroma_service import chroma_service
-from backend.app.core.exceptions import NotFoundException
-from backend.app.core.security import sanitize_input
+from app.models.expense import Expense
+from app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseFilter
+from app.repositories.expense_repository import ExpenseRepository
+from app.services.chroma_service import chroma_service
+from app.core.exceptions import NotFoundException
+from app.core.security import sanitize_input
 
 
 class ExpenseService:

@@ -1,11 +1,11 @@
 from typing import Tuple
 from sqlalchemy.orm import Session
-from backend.app.models.user import User
-from backend.app.schemas.user import UserRegister, UserLogin
-from backend.app.repositories.user_repository import UserRepository
-from backend.app.core.security import hash_password, verify_password, create_access_token
-from backend.app.core.exceptions import ValidationException, AuthenticationException
-from backend.app.core.logging import logger
+from app.models.user import User
+from app.schemas.user import UserRegister, UserLogin
+from app.repositories.user_repository import UserRepository
+from app.core.security import hash_password, verify_password, create_access_token
+from app.core.exceptions import ValidationException, AuthenticationException
+from app.core.logging import logger
 
 
 class AuthService:

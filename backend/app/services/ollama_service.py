@@ -1,8 +1,8 @@
 import requests
 import time
 from typing import Tuple
-from backend.app.core.config import settings
-from backend.app.core.logging import ai_logger, error_logger
+from app.core.config import settings
+from app.core.logging import ai_logger, error_logger
 
 
 class OllamaService:

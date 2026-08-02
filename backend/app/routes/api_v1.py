@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from backend.app.routes.v1.auth import router as auth_router
-from backend.app.routes.v1.expenses import router as expenses_router
-from backend.app.routes.v1.budgets import router as budgets_router
-from backend.app.routes.v1.analytics import router as analytics_router
-from backend.app.routes.v1.chat import router as chat_router
-from backend.app.routes.v1.health import router as health_router
+from app.routes.v1.auth import router as auth_router
+from app.routes.v1.expenses import router as expenses_router
+from app.routes.v1.budgets import router as budgets_router
+from app.routes.v1.analytics import router as analytics_router
+from app.routes.v1.chat import router as chat_router
+from app.routes.v1.health import router as health_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 

@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional
 from pydantic import BaseModel
-from backend.app.schemas.expense import ExpenseRead
+from app.schemas.expense import ExpenseRead
 
 
 class CategorySpending(BaseModel):

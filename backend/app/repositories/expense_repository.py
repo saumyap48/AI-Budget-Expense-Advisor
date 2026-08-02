@@ -2,8 +2,8 @@ from datetime import date as DateType
 from typing import List, Optional, Tuple, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, asc, extract
-from backend.app.models.expense import Expense
-from backend.app.repositories.base import BaseRepository
+from app.models.expense import Expense
+from app.repositories.base import BaseRepository
 
 
 class ExpenseRepository(BaseRepository[Expense]):

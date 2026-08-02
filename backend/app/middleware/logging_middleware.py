@@ -1,7 +1,7 @@
 import time
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, Response
-from backend.app.core.logging import request_logger
+from app.core.logging import request_logger
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):

@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from backend.app.models.budget import Budget
-from backend.app.repositories.base import BaseRepository
+from app.models.budget import Budget
+from app.repositories.base import BaseRepository
 
 
 class BudgetRepository(BaseRepository[Budget]):

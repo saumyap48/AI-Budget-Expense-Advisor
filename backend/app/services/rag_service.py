@@ -1,15 +1,15 @@
 import time
 from typing import List
 from sqlalchemy.orm import Session
-from backend.app.schemas.chat import ChatRequest, ChatResponse, ContextDocument
-from backend.app.services.chroma_service import chroma_service
-from backend.app.services.gemini_service import gemini_service
-from backend.app.services.analytics_service import AnalyticsService
-from backend.app.services.budget_service import BudgetService
-from backend.app.prompts.system_prompt import SYSTEM_FINANCIAL_ADVISOR_PROMPT
-from backend.app.prompts.expense_prompt import EXPENSE_QUERY_TEMPLATE
-from backend.app.prompts.saving_tips_prompt import SAVING_TIPS_TEMPLATE
-from backend.app.core.logging import ai_logger
+from app.schemas.chat import ChatRequest, ChatResponse, ContextDocument
+from app.services.chroma_service import chroma_service
+from app.services.gemini_service import gemini_service
+from app.services.analytics_service import AnalyticsService
+from app.services.budget_service import BudgetService
+from app.prompts.system_prompt import SYSTEM_FINANCIAL_ADVISOR_PROMPT
+from app.prompts.expense_prompt import EXPENSE_QUERY_TEMPLATE
+from app.prompts.saving_tips_prompt import SAVING_TIPS_TEMPLATE
+from app.core.logging import ai_logger
 
 
 class RAGService:

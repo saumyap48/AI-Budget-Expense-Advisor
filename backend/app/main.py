@@ -3,13 +3,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
-from backend.app.core.config import settings
-from backend.app.core.database import engine, Base
-from backend.app.core.logging import logger
-from backend.app.core.exceptions import DomainException
-from backend.app.middleware.logging_middleware import RequestLoggingMiddleware
-from backend.app.middleware.error_handler import domain_exception_handler, global_exception_handler
-from backend.app.routes.api_v1 import api_v1_router
+from app.core.config import settings
+from app.core.database import engine, Base
+from app.core.logging import logger
+from app.core.exceptions import DomainException
+from app.middleware.logging_middleware import RequestLoggingMiddleware
+from app.middleware.error_handler import domain_exception_handler, global_exception_handler
+from app.routes.api_v1 import api_v1_router
 
 
 def create_app() -> FastAPI:
@@ -71,7 +71,7 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "backend.app.main:app",
+        "app.main:app",
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.DEBUG

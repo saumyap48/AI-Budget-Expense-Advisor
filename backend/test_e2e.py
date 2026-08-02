@@ -5,14 +5,14 @@ from datetime import date
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.app.core.database import SessionLocal, engine, Base
-from backend.app.schemas.expense import ExpenseCreate
-from backend.app.schemas.budget import BudgetCreate
-from backend.app.schemas.chat import ChatRequest
-from backend.app.services.expense_service import ExpenseService
-from backend.app.services.budget_service import BudgetService
-from backend.app.services.analytics_service import AnalyticsService
-from backend.app.services.rag_service import RAGService
+from app.core.database import SessionLocal, engine, Base
+from app.schemas.expense import ExpenseCreate
+from app.schemas.budget import BudgetCreate
+from app.schemas.chat import ChatRequest
+from app.services.expense_service import ExpenseService
+from app.services.budget_service import BudgetService
+from app.services.analytics_service import AnalyticsService
+from app.services.rag_service import RAGService
 
 
 def test_e2e():

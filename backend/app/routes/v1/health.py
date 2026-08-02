@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from backend.app.core.database import get_db
-from backend.app.schemas.common import ApiResponse
-from backend.app.services.gemini_service import gemini_service
+from app.core.database import get_db
+from app.schemas.common import ApiResponse
+from app.services.gemini_service import gemini_service
 
 router = APIRouter(tags=["Health"])
 

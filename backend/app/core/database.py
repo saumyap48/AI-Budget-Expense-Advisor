@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, declarative_base
-from backend.app.core.config import settings
+from app.core.config import settings
 
 # Ensure data directory exists
 database_path = settings.DATABASE_URL.replace("sqlite:///", "")

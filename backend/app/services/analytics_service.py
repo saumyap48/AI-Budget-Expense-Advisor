@@ -1,11 +1,11 @@
 from datetime import date, datetime, timedelta
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
-from backend.app.schemas.analytics import AnalyticsSummary, CategorySpending, TrendPoint
-from backend.app.schemas.expense import ExpenseRead
-from backend.app.repositories.expense_repository import ExpenseRepository
-from backend.app.repositories.budget_repository import BudgetRepository
-from backend.app.utils.datetime_utils import get_current_month_year, get_month_date_range
+from app.schemas.analytics import AnalyticsSummary, CategorySpending, TrendPoint
+from app.schemas.expense import ExpenseRead
+from app.repositories.expense_repository import ExpenseRepository
+from app.repositories.budget_repository import BudgetRepository
+from app.utils.datetime_utils import get_current_month_year, get_month_date_range
 
 
 class AnalyticsService:

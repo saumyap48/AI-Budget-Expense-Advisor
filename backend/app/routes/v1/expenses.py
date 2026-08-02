@@ -2,12 +2,12 @@ from typing import List, Optional
 from datetime import date as DateType
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from backend.app.core.database import get_db
-from backend.app.schemas.common import ApiResponse, PaginationMeta
-from backend.app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseRead, ExpenseFilter
-from backend.app.services.expense_service import ExpenseService
-from backend.app.dependencies.auth import get_current_user
-from backend.app.models.user import User
+from app.core.database import get_db
+from app.schemas.common import ApiResponse, PaginationMeta
+from app.schemas.expense import ExpenseCreate, ExpenseUpdate, ExpenseRead, ExpenseFilter
+from app.services.expense_service import ExpenseService
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/expenses", tags=["Expenses"])
 

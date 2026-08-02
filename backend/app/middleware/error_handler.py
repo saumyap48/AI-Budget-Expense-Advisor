@@ -1,7 +1,7 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
-from backend.app.core.exceptions import DomainException, NotFoundException, ValidationException, AuthenticationException, AIException
-from backend.app.core.logging import error_logger
+from app.core.exceptions import DomainException, NotFoundException, ValidationException, AuthenticationException, AIException
+from app.core.logging import error_logger
 
 
 async def domain_exception_handler(request: Request, exc: DomainException):

@@ -1,12 +1,12 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from backend.app.core.database import get_db
-from backend.app.schemas.common import ApiResponse
-from backend.app.schemas.budget import BudgetCreate, BudgetStatus
-from backend.app.services.budget_service import BudgetService
-from backend.app.dependencies.auth import get_current_user
-from backend.app.models.user import User
+from app.core.database import get_db
+from app.schemas.common import ApiResponse
+from app.schemas.budget import BudgetCreate, BudgetStatus
+from app.services.budget_service import BudgetService
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/budgets", tags=["Budgets"])
 

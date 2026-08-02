@@ -1,9 +1,9 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-from backend.app.schemas.budget import BudgetCreate, BudgetStatus
-from backend.app.repositories.budget_repository import BudgetRepository
-from backend.app.repositories.expense_repository import ExpenseRepository
-from backend.app.utils.datetime_utils import get_current_month_year
+from app.schemas.budget import BudgetCreate, BudgetStatus
+from app.repositories.budget_repository import BudgetRepository
+from app.repositories.expense_repository import ExpenseRepository
+from app.utils.datetime_utils import get_current_month_year
 
 
 class BudgetService:

@@ -1,4 +1,4 @@
-from backend.app.models.expense import Expense
+from app.models.expense import Expense
 
 
 def build_expense_document(expense: Expense) -> str:
