@@ -1,6 +1,6 @@
-# AI Budget & Expense Advisor (Full Stack + Local AI + RAG)
+# AI Budget & Expense Advisor (Full Stack + Gemini AI + RAG)
 
-A production-grade, offline-first personal finance web application where users can manage daily expenses, set and track monthly budgets, visualize spending analytics via interactive charts, and consult an AI assistant powered by **Retrieval-Augmented Generation (RAG)** using local **Ollama (Llama 3)** and **ChromaDB**.
+A production-grade personal finance web application where users can manage daily expenses, set and track monthly budgets, visualize spending analytics via interactive charts, and consult an AI assistant powered by **Retrieval-Augmented Generation (RAG)** using **Google Gemini API** and **ChromaDB**.
 
 ---
 
@@ -9,9 +9,9 @@ A production-grade, offline-first personal finance web application where users c
 - 💳 **Full Expense Lifecycle (CRUD)**: Record, update, search, filter by category, and delete transactions with instant state synchronization.
 - 🎯 **Monthly Budgeting & Alerts**: Dynamic budget utilization tracking with visual warnings when spending exceeds 80% and alerts when over 100%.
 - 📊 **Interactive Data Analytics**: Visual dashboards powered by Chart.js featuring daily spending trend lines, category distribution doughnut charts, daily average calculations, and top spending categories.
-- 🤖 **Local AI Financial Assistant**: Grounded AI chatbot answering questions based **strictly on your personal expense data** using ChromaDB vector search and local Llama 3 via Ollama.
+- 🤖 **Gemini AI Financial Assistant**: Grounded AI chatbot answering questions based **strictly on your personal expense data** using ChromaDB vector search and Google Gemini (`gemini-1.5-flash`).
 - 🛡️ **Zero-Hallucination RAG Pipeline**: Strict prompt guardrails prevent the AI from generating unverified or hallucinated financial numbers.
-- 🔒 **100% Local & Private**: Operates entirely offline without cloud dependencies or paid APIs.
+- ☁️ **Cloud AI, Private Data**: Your expense data never leaves your machine — only the query prompt is sent to Gemini's API.
 
 ---
 
@@ -24,8 +24,8 @@ User (Browser) <---> Vanilla JS Frontend (Fetch API + Chart.js)
                              │
         ┌────────────────────┼────────────────────┐
         │                    │                    │
-   SQLite DB             ChromaDB             Ollama API
-(Expenses & Budget)  (Vector Database)    (Llama 3 LLM)
+   SQLite DB             ChromaDB            Gemini API
+(Expenses & Budget)  (Vector Database)  (gemini-1.5-flash)
 ```
 
 ---
@@ -42,6 +42,7 @@ AI-Budget-Expense-Advisor/
 │   │   ├── schemas/                    # Pydantic request/response validation DTOs
 │   │   ├── repositories/               # Repository pattern for database abstraction
 │   │   ├── services/                   # Business logic, ChromaDB & RAG orchestrator
+│   │   │   └── gemini_service.py       # Google Gemini API integration
 │   │   ├── routes/                     # Versioned REST API endpoints (/api/v1)
 │   │   ├── middleware/                 # Request logging & error translation
 │   │   ├── prompts/                    # Financial prompt templates
@@ -51,7 +52,7 @@ AI-Budget-Expense-Advisor/
 │   ├── logs/                           # Operational, AI, and error log files
 │   ├── requirements.txt
 │   ├── .env.example
-│   └── .env
+│   └── .env                            # ⚠️ Not committed — add your GEMINI_API_KEY here
 │
 ├── frontend/
 │   ├── index.html                      # Single Page Application HTML
@@ -68,7 +69,7 @@ AI-Budget-Expense-Advisor/
 
 - **Frontend**: HTML5, CSS3 (Vanilla Glassmorphism), JavaScript (ES6 Modules), Chart.js
 - **Backend**: Python 3.12+, FastAPI, SQLAlchemy, SQLite, Pydantic v2
-- **AI & RAG**: Ollama, Llama 3, ChromaDB, Sentence-Transformers (`all-MiniLM-L6-v2`)
+- **AI & RAG**: Google Gemini API (`gemini-1.5-flash`), ChromaDB, Sentence-Transformers (`all-MiniLM-L6-v2`)
 
 ---
 
@@ -76,16 +77,20 @@ AI-Budget-Expense-Advisor/
 
 ### Prerequisites
 1. **Python 3.12+** installed.
-2. **Ollama** installed locally from [ollama.com](https://ollama.com).
+2. A **Google Gemini API key** — get one free at [aistudio.google.com](https://aistudio.google.com/app/apikey).
 
-### Step 1: Start Ollama & Load Model
-Open terminal and start Ollama with Llama 3:
+### Step 1: Configure Environment
+Copy `.env.example` to `.env` inside the `backend/` folder and add your Gemini API key:
 ```bash
-ollama run llama3
+cp backend/.env.example backend/.env
+```
+Edit `backend/.env`:
+```env
+GEMINI_API_KEY="your-gemini-api-key-here"
+GEMINI_MODEL="gemini-1.5-flash"
 ```
 
 ### Step 2: Install Backend Dependencies
-In project root:
 ```bash
 cd backend
 python -m venv venv
@@ -111,7 +116,7 @@ Open `frontend/index.html` in your web browser (or serve using VS Code Live Serv
 
 ## 📝 Resume Project Highlights
 
-> **Built an offline-first AI Personal Finance & Expense Advisor using FastAPI, SQLAlchemy, SQLite, ChromaDB, Sentence-Transformers, Ollama (Llama 3), and Chart.js. Architected a layered system incorporating the Repository Pattern, versioned REST APIs, automatic vector sync on database mutations, and RAG metadata filtering with zero-hallucination guardrails.**
+> **Built an AI-powered Personal Finance & Expense Advisor using FastAPI, SQLAlchemy, SQLite, ChromaDB, Sentence-Transformers, Google Gemini API, and Chart.js. Architected a layered system incorporating the Repository Pattern, versioned REST APIs, automatic vector sync on database mutations, and RAG metadata filtering with zero-hallucination guardrails.**
 
 ---
 
