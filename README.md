@@ -9,7 +9,7 @@ A production-grade personal finance web application where users can manage daily
 - 💳 **Full Expense Lifecycle (CRUD)**: Record, update, search, filter by category, and delete transactions with instant state synchronization.
 - 🎯 **Monthly Budgeting & Alerts**: Dynamic budget utilization tracking with visual warnings when spending exceeds 80% and alerts when over 100%.
 - 📊 **Interactive Data Analytics**: Visual dashboards powered by Chart.js featuring daily spending trend lines, category distribution doughnut charts, daily average calculations, and top spending categories.
-- 🤖 **Gemini AI Financial Assistant**: Grounded AI chatbot answering questions based **strictly on your personal expense data** using ChromaDB vector search and Google Gemini (`gemini-1.5-flash`).
+- 🤖 **Gemini AI Financial Assistant**: Grounded AI chatbot answering questions based **strictly on your personal expense data** using ChromaDB vector search and Google Gemini (`gemini-2.5-flash`).
 - 🛡️ **Zero-Hallucination RAG Pipeline**: Strict prompt guardrails prevent the AI from generating unverified or hallucinated financial numbers.
 - ☁️ **Cloud AI, Private Data**: Your expense data never leaves your machine — only the query prompt is sent to Gemini's API.
 
@@ -25,7 +25,7 @@ User (Browser) <---> Vanilla JS Frontend (Fetch API + Chart.js)
         ┌────────────────────┼────────────────────┐
         │                    │                    │
    SQLite DB             ChromaDB            Gemini API
-(Expenses & Budget)  (Vector Database)  (gemini-1.5-flash)
+(Expenses & Budget)  (Vector Database)  (gemini-2.5-flash)
 ```
 
 ---
@@ -69,7 +69,7 @@ AI-Budget-Expense-Advisor/
 
 - **Frontend**: HTML5, CSS3 (Vanilla Glassmorphism), JavaScript (ES6 Modules), Chart.js
 - **Backend**: Python 3.12+, FastAPI, SQLAlchemy, SQLite, Pydantic v2
-- **AI & RAG**: Google Gemini API (`gemini-1.5-flash`), ChromaDB, Sentence-Transformers (`all-MiniLM-L6-v2`)
+- **AI & RAG**: Google Gemini API (`gemini-2.5-flash`), ChromaDB, Sentence-Transformers (`all-MiniLM-L6-v2`)
 
 ---
 
@@ -87,7 +87,7 @@ cp backend/.env.example backend/.env
 Edit `backend/.env`:
 ```env
 GEMINI_API_KEY="your-gemini-api-key-here"
-GEMINI_MODEL="gemini-1.5-flash"
+GEMINI_MODEL="gemini-2.5-flash"
 ```
 
 ### Step 2: Install Backend Dependencies

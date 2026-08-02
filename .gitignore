@@ -4,22 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
 # Virtual Environment
 venv/
@@ -27,20 +11,23 @@ ENV/
 env/
 .venv/
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
+*.env
 !.env.example
 
-# IDEs
+# IDEs & OS
 .vscode/
 .idea/
 *.swp
-
-# SQLite DB & Data
-backend/data/*.db
-backend/vector_store/chroma_db/
-backend/logs/*.log
-
-# Operating System
 .DS_Store
 Thumbs.db
+
+# SQLite DB, Vector Store & Data
+data/
+*.db
+*.db-shm
+*.db-wal
+vector_store/
+logs/
+*.log
