@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from passlib.context import CryptContext
-import jwt
+from jose import jwt, JWTError, ExpiredSignatureError
 from app.core.config import settings
 from app.core.logging import logger, error_logger
 
@@ -36,10 +36,10 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         logger.warning("Attempted use of expired JWT token.")
         return None
-    except jwt.InvalidTokenError as e:
+    except JWTError as e:
         error_logger.warning(f"Invalid JWT token: {str(e)}")
         return None
 
