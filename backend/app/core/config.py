@@ -43,12 +43,6 @@ class Settings:
     # CORS Configuration
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "https://ai-budget-expense-advisor-nskycwcu4-saumyap48s-projects.vercel.app")
 
-    # Ollama / LLM Configuration
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "gemini")  # "gemini" or "ollama"
-    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3")
-    OLLAMA_TIMEOUT_SECONDS: int = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "30"))
-
     # CORS Configuration (comma-separated list)
     ALLOWED_ORIGINS: str = os.getenv(
         "ALLOWED_ORIGINS",
