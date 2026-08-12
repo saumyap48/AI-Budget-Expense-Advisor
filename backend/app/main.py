@@ -7,9 +7,10 @@ from fastapi.responses import FileResponse
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.core.logging import logger
+from sqlalchemy.exc import SQLAlchemyError
 from app.core.exceptions import DomainException
 from app.middleware.logging_middleware import RequestLoggingMiddleware
-from app.middleware.error_handler import domain_exception_handler, global_exception_handler
+from app.middleware.error_handler import domain_exception_handler, db_exception_handler, global_exception_handler
 from app.routes.api_v1 import api_v1_router
 
 
@@ -108,6 +109,7 @@ app.add_middleware(
 # These are NOT middleware — they do not affect the middleware stack order.
 # ---------------------------------------------------------------------------
 app.add_exception_handler(DomainException, domain_exception_handler)
+app.add_exception_handler(SQLAlchemyError, db_exception_handler)
 app.add_exception_handler(Exception, global_exception_handler)
 
 # ---------------------------------------------------------------------------

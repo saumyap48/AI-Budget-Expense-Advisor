@@ -22,8 +22,15 @@ export class ApiService {
       }
     };
 
+    // 60-second timeout to prevent indefinite hanging during cold starts
+    const timeoutMs = options.timeout || 60000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    config.signal = controller.signal;
+
     try {
       const response = await fetch(url, config);
+      clearTimeout(timeoutId);
 
       if (response.status === 401) {
         localStorage.removeItem('token');
@@ -32,15 +39,48 @@ export class ApiService {
         throw new Error('Session expired. Please log in again.');
       }
 
-      const data = await response.json();
+      let data;
+      const text = await response.text();
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        if (!response.ok) {
+          throw new Error(`Server error (${response.status}): ${text.substring(0, 150) || response.statusText}`);
+        }
+        throw new Error('Invalid JSON response received from server.');
+      }
 
       if (!response.ok) {
-        const errorMsg = data.message || data.error?.details || 'API request failed';
+        let errorMsg = '';
+        if (data.error?.details && data.message && data.message !== data.error.details) {
+          errorMsg = `${data.message}: ${data.error.details}`;
+        } else {
+          errorMsg = data.error?.details || data.message;
+        }
+
+        if (!errorMsg && data.detail) {
+          if (Array.isArray(data.detail)) {
+            errorMsg = data.detail.map(d => (typeof d === 'string' ? d : d.msg || d.message || JSON.stringify(d))).join('; ');
+          } else if (typeof data.detail === 'string') {
+            errorMsg = data.detail;
+          } else if (typeof data.detail === 'object') {
+            errorMsg = JSON.stringify(data.detail);
+          }
+        }
+
+        if (!errorMsg) {
+          errorMsg = `API request failed with status ${response.status}`;
+        }
+
         throw new Error(errorMsg);
       }
 
       return data;
     } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. The server may be waking up from cold start, please try again.');
+      }
       console.error(`API Error on [${endpoint}]:`, error);
       throw error;
     }

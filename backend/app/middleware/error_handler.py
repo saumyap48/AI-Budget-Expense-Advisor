@@ -1,5 +1,6 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from app.core.exceptions import (
     DomainException,
     NotFoundException,
@@ -45,6 +46,23 @@ async def domain_exception_handler(request: Request, exc: DomainException):
             "data": None,
             "message": exc.message,
             "error": {"code": exc.code, "details": exc.message},
+        },
+    )
+
+
+async def db_exception_handler(request: Request, exc: SQLAlchemyError):
+    error_logger.error(
+        f"Database error on {request.method} {request.url.path}: {str(exc)}",
+        exc_info=True,
+    )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        headers=_cors_headers(request),
+        content={
+            "success": False,
+            "data": None,
+            "message": "Database connection error. Please verify database environment configuration.",
+            "error": {"code": "DATABASE_ERROR", "details": str(exc)},
         },
     )
 
