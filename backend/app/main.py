@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,10 +12,34 @@ from app.middleware.logging_middleware import RequestLoggingMiddleware
 from app.middleware.error_handler import domain_exception_handler, global_exception_handler
 from app.routes.api_v1 import api_v1_router
 
+
 # ---------------------------------------------------------------------------
-# Database bootstrap
+# Lifespan: runs AFTER uvicorn binds the port — safe for Render port scan
 # ---------------------------------------------------------------------------
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup/shutdown lifecycle managed by uvicorn after socket bind."""
+    # ── Startup ──────────────────────────────────────────────────────────────
+    # Database table creation — deferred so the port is already bound.
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables verified / created.")
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"DB create_all failed (non-fatal): {exc}")
+
+    # ChromaDB / fallback vector-store singleton — deferred for same reason.
+    try:
+        from app.services.chroma_service import chroma_service  # noqa: F401
+        logger.info("ChromaDB / vector-store initialised.")
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Vector-store init failed (non-fatal): {exc}")
+
+    logger.info(
+        f"Application startup complete — HOST=0.0.0.0 PORT={os.environ.get('PORT', settings.PORT)}"
+    )
+    yield
+    # ── Shutdown ─────────────────────────────────────────────────────────────
+    logger.info("Application shutdown.")
 
 # ---------------------------------------------------------------------------
 # Application
@@ -25,6 +50,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # ---------------------------------------------------------------------------
