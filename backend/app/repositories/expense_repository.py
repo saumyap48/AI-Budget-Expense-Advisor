@@ -111,6 +111,13 @@ class ExpenseRepository(BaseRepository[Expense]):
 
         return float(result) if result else 0.0
 
+    def get_total_spent(self, user_id: int) -> float:
+        result = self.db.query(func.sum(Expense.amount)).filter(
+            Expense.user_id == user_id
+        ).scalar()
+
+        return float(result) if result else 0.0
+
     def get_top_expenses(self, user_id: int, limit: int = 5, sort_by_amount: bool = False) -> List[Expense]:
         query = self.db.query(Expense).filter(Expense.user_id == user_id)
         if sort_by_amount:

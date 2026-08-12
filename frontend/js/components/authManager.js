@@ -76,10 +76,11 @@ export class AuthManager {
     if (token) {
       try {
         const res = await ApiService.getMe();
-        if (res.success) {
+        if (res.success && res.data) {
           this.setCurrentUser(res.data);
           this.hideAuthOverlay();
-          window.app?.refreshAll();
+          // Defer so window.app is fully set before refreshAll is called
+          setTimeout(() => window.app?.refreshAll(), 0);
         } else {
           this.logout();
         }
@@ -94,8 +95,11 @@ export class AuthManager {
 
   async handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('login-email').value;
+    const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Signing in...'; }
 
     try {
       const res = await ApiService.login(email, password);
@@ -104,21 +108,22 @@ export class AuthManager {
         this.setCurrentUser(res.data.user);
         this.hideAuthOverlay();
         this.showToast('Welcome back!', 'success');
-        
-        // Refresh all app components
         window.app?.refreshAll();
       }
     } catch (err) {
       this.showToast(err.message || 'Invalid email or password.', 'danger');
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Sign In →'; }
     }
   }
 
   async handleRegister(e) {
     e.preventDefault();
-    const fullName = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
+    const fullName = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
     const confirmPassword = document.getElementById('reg-confirm-password').value;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
     if (password !== confirmPassword) {
       this.showToast('Passwords do not match.', 'danger');
@@ -130,6 +135,8 @@ export class AuthManager {
       return;
     }
 
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating account...'; }
+
     try {
       const res = await ApiService.register(fullName, email, password, confirmPassword);
       if (res.success && res.data) {
@@ -137,11 +144,12 @@ export class AuthManager {
         this.setCurrentUser(res.data.user);
         this.hideAuthOverlay();
         this.showToast('Registration successful! Welcome!', 'success');
-        
         window.app?.refreshAll();
       }
     } catch (err) {
       this.showToast(err.message || 'Registration failed.', 'danger');
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Account →'; }
     }
   }
 

@@ -36,6 +36,9 @@ export class ChatWidget {
     this.appendMessage('user', question);
     this.inputField.value = '';
 
+    // Disable send button while waiting
+    if (this.sendBtn) { this.sendBtn.disabled = true; this.sendBtn.textContent = '...'; }
+
     // Render Typing Indicator
     const typingElem = this.appendTypingIndicator();
 
@@ -50,7 +53,9 @@ export class ChatWidget {
       }
     } catch (err) {
       typingElem.remove();
-      this.appendMessage('ai', `⚠️ Error connecting to server: ${err.message}`);
+      this.appendMessage('ai', `Error: ${err.message || 'Could not connect to server.'}`);
+    } finally {
+      if (this.sendBtn) { this.sendBtn.disabled = false; this.sendBtn.textContent = 'Send 🚀'; }
     }
   }
 
@@ -63,10 +68,14 @@ export class ChatWidget {
 
     let sourcesHtml = '';
     if (docs && docs.length > 0) {
-      const tags = docs.map(d => `<span class="context-tag">📄 ${d.content}</span>`).join('');
+      // Truncate each document content to 80 chars to keep the UI clean
+      const tags = docs.map(d => {
+        const snippet = (d.content || '').substring(0, 80) + ((d.content || '').length > 80 ? '...' : '');
+        return `<span class="context-tag">📄 ${snippet}</span>`;
+      }).join('');
       sourcesHtml = `
         <div class="context-sources">
-          <div><strong>Retrieved Context Sources:</strong></div>
+          <div><strong>Retrieved Context Sources (${docs.length}):</strong></div>
           ${tags}
         </div>
       `;

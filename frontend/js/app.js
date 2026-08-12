@@ -6,13 +6,13 @@ import { ChatWidget } from './components/chatWidget.js';
 
 class App {
   constructor() {
-    // AuthManager first to block unauthorized requests on start
-    this.authManager = new AuthManager();
-    
     this.expenseManager = new ExpenseManager();
     this.budgetTracker = new BudgetTracker();
     this.analyticsView = new AnalyticsView();
     this.chatWidget = new ChatWidget();
+
+    // AuthManager initialized last so window.app is set before checkAuthState fires refreshAll
+    this.authManager = new AuthManager();
 
     this.initNavigation();
   }
@@ -31,11 +31,19 @@ class App {
         item.classList.add('active');
         document.getElementById(`tab-${targetTab}`)?.classList.add('active');
 
-        // Only refresh views if logged in
+        // Only refresh data views if user is logged in
         const token = localStorage.getItem('token');
-        if (token && (targetTab === 'analytics' || targetTab === 'dashboard')) {
+        if (!token) return;
+
+        if (targetTab === 'dashboard') {
           this.analyticsView.loadAnalytics();
+          this.budgetTracker.loadBudget();
+        } else if (targetTab === 'expenses') {
+          this.expenseManager.loadExpenses();
+        } else if (targetTab === 'budget') {
+          this.budgetTracker.loadBudget();
         }
+        // ai-chat tab: no auto-load needed
       });
     });
   }
@@ -53,5 +61,6 @@ class App {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Set window.app before AuthManager.checkAuthState fires so refreshAll is available
   window.app = new App();
 });

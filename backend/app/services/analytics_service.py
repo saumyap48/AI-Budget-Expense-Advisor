@@ -19,11 +19,15 @@ class AnalyticsService:
         start_date, end_date = get_month_date_range(year, month)
 
         # Total expenses & count
-        all_expenses, total_count = self.expense_repo.get_filtered(user_id=user_id, limit=1000)
-        total_expenses = sum(e.amount for e in all_expenses)
+        total_expenses = self.expense_repo.get_total_spent(user_id)
+        _, total_count = self.expense_repo.get_filtered(user_id=user_id, limit=1)
 
         # Average daily spending in current month
-        days_in_month = (date.today() - start_date).days + 1 if date.today().month == month else 30
+        today = date.today()
+        if today.month == month and today.year == year:
+            days_in_month = (today - start_date).days + 1
+        else:
+            days_in_month = 30
         days_in_month = max(1, days_in_month)
         current_month_spent = self.expense_repo.get_monthly_spent(user_id, month, year)
         average_daily = current_month_spent / days_in_month
@@ -55,8 +59,8 @@ class AnalyticsService:
         top_recent_orm = self.expense_repo.get_top_expenses(user_id=user_id, limit=5, sort_by_amount=False)
         top_largest_orm = self.expense_repo.get_top_expenses(user_id=user_id, limit=5, sort_by_amount=True)
 
-        top_recent = [ExpenseRead.from_orm(e) for e in top_recent_orm]
-        top_largest = [ExpenseRead.from_orm(e) for e in top_largest_orm]
+        top_recent = [ExpenseRead.model_validate(e) for e in top_recent_orm]
+        top_largest = [ExpenseRead.model_validate(e) for e in top_largest_orm]
 
         # Health score math
         budget = self.budget_repo.get_by_month_year(user_id, month, year)

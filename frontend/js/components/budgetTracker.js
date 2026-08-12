@@ -41,6 +41,10 @@ export class BudgetTracker {
     if (this.remEl) this.remEl.textContent = `$${data.remaining_balance.toFixed(2)}`;
     if (this.pctEl) this.pctEl.textContent = `${data.percentage_spent.toFixed(1)}%`;
 
+    // Update the '% used' label in the budget tab (different element ID)
+    const pctLabel = document.getElementById('budget-pct-label');
+    if (pctLabel) pctLabel.textContent = `${data.percentage_spent.toFixed(1)}% used`;
+
     // Progress Bar Fill
     const pct = Math.min(100, data.percentage_spent);
     if (this.fillBar) {
@@ -55,7 +59,6 @@ export class BudgetTracker {
       this.banner.className = `budget-status-banner banner-${data.status_level}`;
       this.banner.innerHTML = `<span>${icon} ${data.message}</span>`;
     }
-
   }
 
   openModal() {
@@ -77,8 +80,8 @@ export class BudgetTracker {
       year: parseInt(document.getElementById('bg-year').value, 10)
     };
 
-    if (payload.monthly_budget <= 0) {
-      alert('Monthly budget must be greater than zero');
+    if (payload.monthly_budget <= 0 || isNaN(payload.monthly_budget)) {
+      this.showToast('Monthly budget must be greater than zero', 'warning');
       return;
     }
 
@@ -87,10 +90,21 @@ export class BudgetTracker {
       if (res.success) {
         this.render(res.data);
         this.closeModal();
+        this.showToast('Budget updated successfully!', 'success');
         window.app?.refreshAll();
       }
     } catch (err) {
-      alert(err.message || 'Failed to update budget');
+      this.showToast(err.message || 'Failed to update budget', 'danger');
     }
+  }
+
+  showToast(msg, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
   }
 }

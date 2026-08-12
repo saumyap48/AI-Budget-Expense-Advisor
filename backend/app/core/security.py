@@ -11,25 +11,6 @@ from app.core.logging import logger, error_logger
 # ---------------------------------------------------------------------------
 # Password hashing
 # ---------------------------------------------------------------------------
-# We use Argon2 (winner of the Password Hashing Competition) instead of bcrypt.
-#
-# Why not bcrypt?
-#   passlib 1.7.4 (last release: 2020, unmaintained) uses the __about__ module
-#   to detect the bcrypt library version.  bcrypt 4.x→5.0 removed __about__,
-#   causing passlib to raise:
-#       ValueError: password cannot be longer than 72 bytes
-#   on EVERY password — even short ones — because the backend detection fails.
-#
-# Why Argon2?
-#   • No 72-byte input limit (handles passwords of any length)
-#   • Memory-hard: resistant to GPU / ASIC brute-force attacks
-#   • Actively maintained (argon2-cffi)
-#   • passlib has first-class Argon2 support via CryptContext
-#
-# The `deprecated="auto"` setting means any hash produced with an old scheme
-# will be transparently re-hashed to argon2 on next successful login, making
-# future algorithm migrations seamless.
-# ---------------------------------------------------------------------------
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 

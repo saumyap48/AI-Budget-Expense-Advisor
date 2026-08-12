@@ -14,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 def register(data: UserRegister, db: Session = Depends(get_db)):
     """Register a new user account and issue an access token."""
     user, access_token = AuthService.register_user(db, data)
-    user_response = UserResponse.from_orm(user)
+    user_response = UserResponse.model_validate(user)
     token_obj = Token(access_token=access_token, token_type="bearer", user=user_response)
     return ApiResponse(success=True, data=token_obj, message="User registered successfully")
 
@@ -23,7 +23,7 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
 def login(data: UserLogin, db: Session = Depends(get_db)):
     """Authenticate user credentials and issue an access token."""
     user, access_token = AuthService.authenticate_user(db, data)
-    user_response = UserResponse.from_orm(user)
+    user_response = UserResponse.model_validate(user)
     token_obj = Token(access_token=access_token, token_type="bearer", user=user_response)
     return ApiResponse(success=True, data=token_obj, message="Login successful")
 
@@ -31,5 +31,5 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
 @router.get("/me", response_model=ApiResponse[UserResponse])
 def get_me(current_user: User = Depends(get_current_user)):
     """Get authenticated user details."""
-    user_response = UserResponse.from_orm(current_user)
+    user_response = UserResponse.model_validate(current_user)
     return ApiResponse(success=True, data=user_response, message="User profile retrieved")

@@ -1,6 +1,9 @@
 import os
 import sys
 
+# Ensure test environment to protect production database
+os.environ["PYTEST_CURRENT_TEST"] = "1"
+
 # Ensure backend path
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:

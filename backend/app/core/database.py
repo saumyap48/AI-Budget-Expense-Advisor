@@ -1,32 +1,18 @@
 import os
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
 
-# Ensure data directory exists
-database_path = settings.DATABASE_URL.replace("sqlite:///", "")
-data_dir = os.path.dirname(database_path)
-if data_dir and not os.path.exists(data_dir):
-    os.makedirs(data_dir, exist_ok=True)
+# Choose database URL: use TEST_DATABASE_URL when running tests (pytest sets PYTEST_CURRENT_TEST)
+if os.getenv("PYTEST_CURRENT_TEST"):
+    db_url = settings.TEST_DATABASE_URL
+else:
+    db_url = settings.DATABASE_URL
 
-# Create engine with SQLite optimization settings
-engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    echo=False
-)
+# Create PostgreSQL engine
+engine = create_engine(db_url, echo=False)
 
-
-# Enable SQLite WAL mode and foreign keys on connect
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL;")
-    cursor.execute("PRAGMA synchronous=NORMAL;")
-    cursor.execute("PRAGMA foreign_keys=ON;")
-    cursor.close()
-
-
+# Session factory and Base declarative class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

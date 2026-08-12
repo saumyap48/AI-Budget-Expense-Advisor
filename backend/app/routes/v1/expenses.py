@@ -48,7 +48,7 @@ def list_expenses(
         total_pages=total_pages
     )
 
-    data = [ExpenseRead.from_orm(item) for item in items]
+    data = [ExpenseRead.model_validate(item) for item in items]
     return ApiResponse(success=True, data=data, message="Expenses retrieved successfully", meta=meta)
 
 
@@ -62,7 +62,7 @@ def create_expense(
     created = service.create_expense(payload, user_id=current_user.id)
     return ApiResponse(
         success=True,
-        data=ExpenseRead.from_orm(created),
+        data=ExpenseRead.model_validate(created),
         message="Expense recorded successfully and synced with vector store"
     )
 
@@ -75,7 +75,7 @@ def get_expense(
 ):
     service = ExpenseService(db)
     item = service.get_expense(expense_id, user_id=current_user.id)
-    return ApiResponse(success=True, data=ExpenseRead.from_orm(item), message="Expense retrieved successfully")
+    return ApiResponse(success=True, data=ExpenseRead.model_validate(item), message="Expense retrieved successfully")
 
 
 @router.put("/{expense_id}", response_model=ApiResponse[ExpenseRead])
@@ -89,7 +89,7 @@ def update_expense(
     updated = service.update_expense(expense_id, user_id=current_user.id, data=payload)
     return ApiResponse(
         success=True,
-        data=ExpenseRead.from_orm(updated),
+        data=ExpenseRead.model_validate(updated),
         message="Expense updated successfully and vector index synced"
     )
 

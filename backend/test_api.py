@@ -1,81 +1,211 @@
-import urllib.request, json, sys
+import os
+import sys
 
-BASE = "http://localhost:8000"
+# Ensure test environment to use TEST_DATABASE_URL
+os.environ["PYTEST_CURRENT_TEST"] = "1"
 
-def hit(method, path, data=None):
-    url = BASE + path
-    req = urllib.request.Request(url, method=method)
-    req.add_header('Content-Type', 'application/json')
-    if data:
-        req.data = json.dumps(data).encode()
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            body = json.loads(r.read())
-            success = body.get("success", "?")
-            msg = body.get("message", "")[:60]
-            print(f"  [{r.status}] {method} {path}  -> success={success}  {msg}")
-            return body
-    except urllib.error.HTTPError as e:
-        body = json.loads(e.read())
-        print(f"  [{e.code}] {method} {path}  -> ERROR: {body.get('message','')}")
-        return None
-    except Exception as e:
-        print(f"  [FAIL] {method} {path}  -> EXCEPTION: {e}")
-        return None
+# Add project root to sys.path
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
-print("=" * 65)
-print("API ENDPOINT VERIFICATION SUITE")
-print("=" * 65)
+from fastapi.testclient import TestClient
+from app.main import app
+from app.core.database import Base, engine
 
-print("\n[1] HEALTH CHECK")
-hit('GET', '/api/v1/health')
+client = TestClient(app)
 
-print("\n[2] EXPENSES LIST")
-hit('GET', '/api/v1/expenses')
 
-print("\n[3] CREATE EXPENSE")
-r = hit('POST', '/api/v1/expenses', {
-    'amount': 25.0,
-    'category': 'Food',
-    'description': 'API Test Coffee',
-    'date': '2026-08-01',
-    'payment_method': 'Cash'
-})
+def test_full_api_suite():
+    print("=" * 65)
+    print("FASTAPI COMPREHENSIVE ENDPOINT VERIFICATION SUITE")
+    print("=" * 65)
 
-new_id = None
-if r and r.get('data'):
-    new_id = r['data']['id']
+    # Initialize fresh test database schema
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    print("\n[0] Test database schema initialized.")
 
-print("\n[4] GET EXPENSE BY ID")
-if new_id:
-    hit('GET', f'/api/v1/expenses/{new_id}')
+    # 1. Health Check
+    print("\n[1] HEALTH CHECK")
+    r = client.get("/api/v1/health")
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}"
+    body = r.json()
+    assert body["success"] is True
+    print(f"  [200] GET /api/v1/health -> DB: {body['data']['database']} | Gemini: {body['data']['gemini_llm']}")
 
-print("\n[5] UPDATE EXPENSE")
-if new_id:
-    hit('PUT', f'/api/v1/expenses/{new_id}', {'amount': 30.0, 'description': 'Updated API Coffee'})
+    # 2. Root Endpoint
+    print("\n[2] ROOT ENDPOINT")
+    r = client.get("/")
+    assert r.status_code == 200
+    print(f"  [200] GET / -> status: {r.json()['status']}")
 
-print("\n[6] DELETE EXPENSE")
-if new_id:
-    hit('DELETE', f'/api/v1/expenses/{new_id}')
+    # 3. Unauthenticated Access (401 Check)
+    print("\n[3] UNAUTHENTICATED ACCESS CHECKS")
+    r = client.get("/api/v1/expenses")
+    assert r.status_code == 401, f"Expected 401, got {r.status_code}"
+    print("  [401] GET /api/v1/expenses -> Unauthorized blocked successfully")
 
-print("\n[7] SET BUDGET")
-hit('POST', '/api/v1/budgets', {'monthly_budget': 600.0, 'month': 8, 'year': 2026})
+    r = client.get("/api/v1/budgets/current")
+    assert r.status_code == 401
+    print("  [401] GET /api/v1/budgets/current -> Unauthorized blocked successfully")
 
-print("\n[8] GET CURRENT BUDGET")
-hit('GET', '/api/v1/budgets/current')
+    # 4. User Registration & Authentication
+    print("\n[4] USER REGISTRATION & LOGIN")
+    user1_data = {
+        "full_name": "API Test User 1",
+        "email": "user1@example.com",
+        "password": "Password123!",
+        "confirm_password": "Password123!"
+    }
+    r = client.post("/api/v1/auth/register", json=user1_data)
+    assert r.status_code == 201, f"Register failed: {r.text}"
+    token1 = r.json()["data"]["access_token"]
+    headers1 = {"Authorization": f"Bearer {token1}"}
+    print("  [201] POST /api/v1/auth/register -> User 1 registered successfully")
 
-print("\n[9] GET ANALYTICS")
-hit('GET', '/api/v1/analytics')
+    r = client.get("/api/v1/auth/me", headers=headers1)
+    assert r.status_code == 200
+    assert r.json()["data"]["email"] == "user1@example.com"
+    print(f"  [200] GET /api/v1/auth/me -> Profile retrieved: {r.json()['data']['full_name']}")
 
-print("\n[10] AI CHAT (with Ollama fallback)")
-hit('POST', '/api/v1/chat', {'question': 'What are my biggest expenses?'})
+    # 5. Create Expense
+    print("\n[5] CREATE EXPENSE")
+    expense_payload = {
+        "amount": 25.50,
+        "category": "Food",
+        "description": "Coffee and Snacks",
+        "date": "2026-08-01",
+        "payment_method": "Cash",
+        "notes": "Morning team refresh"
+    }
+    r = client.post("/api/v1/expenses", headers=headers1, json=expense_payload)
+    assert r.status_code == 201, f"Create expense failed: {r.text}"
+    exp_id = r.json()["data"]["id"]
+    print(f"  [201] POST /api/v1/expenses -> Created Expense #{exp_id} ($25.50 Food)")
 
-print("\n[11] VALIDATION ERROR TEST (negative amount)")
-hit('POST', '/api/v1/expenses', {'amount': -10.0, 'category': 'Food', 'description': 'Bad', 'date': '2026-08-01'})
+    # 6. List Expenses
+    print("\n[6] LIST EXPENSES")
+    r = client.get("/api/v1/expenses", headers=headers1)
+    assert r.status_code == 200
+    items = r.json()["data"]
+    assert len(items) == 1
+    assert items[0]["id"] == exp_id
+    print(f"  [200] GET /api/v1/expenses -> Listed {len(items)} expense(s)")
 
-print("\n[12] NOT FOUND TEST")
-hit('GET', '/api/v1/expenses/99999')
+    # 7. Get Expense By ID
+    print("\n[7] GET EXPENSE BY ID")
+    r = client.get(f"/api/v1/expenses/{exp_id}", headers=headers1)
+    assert r.status_code == 200
+    assert r.json()["data"]["amount"] == 25.50
+    print(f"  [200] GET /api/v1/expenses/{exp_id} -> Retrieved successfully")
 
-print("\n" + "=" * 65)
-print("ALL ENDPOINT TESTS COMPLETE")
-print("=" * 65)
+    # 8. Update Expense
+    print("\n[8] UPDATE EXPENSE")
+    update_payload = {"amount": 30.00, "description": "Updated Coffee and Pastry"}
+    r = client.put(f"/api/v1/expenses/{exp_id}", headers=headers1, json=update_payload)
+    assert r.status_code == 200
+    assert r.json()["data"]["amount"] == 30.00
+    assert r.json()["data"]["description"] == "Updated Coffee and Pastry"
+    print(f"  [200] PUT /api/v1/expenses/{exp_id} -> Updated amount to $30.00")
+
+    # 9. Set & Get Budget
+    print("\n[9] BUDGET ENDPOINTS")
+    budget_payload = {"monthly_budget": 500.0, "month": 8, "year": 2026}
+    r = client.post("/api/v1/budgets", headers=headers1, json=budget_payload)
+    assert r.status_code == 201
+    assert r.json()["data"]["monthly_budget"] == 500.0
+    print("  [201] POST /api/v1/budgets -> Set budget to $500.00")
+
+    r = client.get("/api/v1/budgets/current?month=8&year=2026", headers=headers1)
+    assert r.status_code == 200
+    b_status = r.json()["data"]
+    assert b_status["total_spent"] == 30.00
+    assert b_status["remaining_balance"] == 470.00
+    print(f"  [200] GET /api/v1/budgets/current -> Spent: ${b_status['total_spent']} | Remaining: ${b_status['remaining_balance']}")
+
+    # 10. Analytics Summary
+    print("\n[10] ANALYTICS ENDPOINT")
+    r = client.get("/api/v1/analytics", headers=headers1)
+    assert r.status_code == 200
+    analytics_data = r.json()["data"]
+    assert analytics_data["total_expenses"] == 30.00
+    assert analytics_data["total_count"] == 1
+    print(f"  [200] GET /api/v1/analytics -> Total Expenses: ${analytics_data['total_expenses']} | Score: {analytics_data['financial_health_score']}")
+
+    # 11. AI RAG Chat
+    print("\n[11] AI RAG CHAT ENDPOINT")
+    chat_payload = {"question": "How much did I spend on Food?"}
+    r = client.post("/api/v1/chat", headers=headers1, json=chat_payload)
+    assert r.status_code == 200
+    chat_data = r.json()["data"]
+    assert "answer" in chat_data
+    print(f"  [200] POST /api/v1/chat -> AI Model ({chat_data['model_used']}) answered query")
+
+    # 12. Multi-User Isolation Checks
+    print("\n[12] MULTI-USER ISOLATION CHECKS")
+    user2_data = {
+        "full_name": "API Test User 2",
+        "email": "user2@example.com",
+        "password": "Password123!",
+        "confirm_password": "Password123!"
+    }
+    r = client.post("/api/v1/auth/register", json=user2_data)
+    assert r.status_code == 201
+    headers2 = {"Authorization": f"Bearer {r.json()['data']['access_token']}"}
+
+    # User 2 cannot list User 1's expenses
+    r = client.get("/api/v1/expenses", headers=headers2)
+    assert r.status_code == 200
+    assert len(r.json()["data"]) == 0
+    print("  User 2 GET /api/v1/expenses -> 0 expenses found (Isolated)")
+
+    # User 2 cannot access User 1's expense by ID (404)
+    r = client.get(f"/api/v1/expenses/{exp_id}", headers=headers2)
+    assert r.status_code == 404
+    print("  User 2 GET User 1's expense -> 404 Not Found (Isolated)")
+
+    # User 2 cannot update User 1's expense (404)
+    r = client.put(f"/api/v1/expenses/{exp_id}", headers=headers2, json={"amount": 999.00})
+    assert r.status_code == 404
+    print("  User 2 PUT User 1's expense -> 404 Not Found (Isolated)")
+
+    # User 2 cannot delete User 1's expense (404)
+    r = client.delete(f"/api/v1/expenses/{exp_id}", headers=headers2)
+    assert r.status_code == 404
+    print("  User 2 DELETE User 1's expense -> 404 Not Found (Isolated)")
+
+    # 13. Delete Expense by Owner
+    print("\n[13] DELETE EXPENSE BY OWNER")
+    r = client.delete(f"/api/v1/expenses/{exp_id}", headers=headers1)
+    assert r.status_code == 200
+    print(f"  [200] DELETE /api/v1/expenses/{exp_id} -> Deleted successfully")
+
+    # 14. Validation Error & Not Found Tests
+    print("\n[14] VALIDATION & NOT FOUND TESTS")
+    # Invalid expense category
+    r = client.post("/api/v1/expenses", headers=headers1, json={
+        "amount": 10.0, "category": "InvalidCat", "description": "Test", "date": "2026-08-01"
+    })
+    assert r.status_code == 422 or r.status_code == 400
+    print("  Invalid category rejected with 422/400 (PASSED)")
+
+    # Negative expense amount
+    r = client.post("/api/v1/expenses", headers=headers1, json={
+        "amount": -50.0, "category": "Food", "description": "Test", "date": "2026-08-01"
+    })
+    assert r.status_code == 422 or r.status_code == 400
+    print("  Negative amount rejected with 422/400 (PASSED)")
+
+    # Non-existent ID lookup
+    r = client.get("/api/v1/expenses/99999", headers=headers1)
+    assert r.status_code == 404
+    print("  Non-existent ID returns 404 (PASSED)")
+
+    print("\n" + "=" * 65)
+    print("ALL API ENDPOINT VERIFICATION SUITE TESTS PASSED!")
+    print("=" * 65)
+
+
+if __name__ == "__main__":
+    test_full_api_suite()

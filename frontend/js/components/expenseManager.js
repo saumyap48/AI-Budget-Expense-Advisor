@@ -20,9 +20,12 @@ export class ExpenseManager {
     // Form Submit
     this.form?.addEventListener('submit', (e) => this.handleSubmit(e));
 
-    // Filters
+    // Filters - use debounce for search input to avoid rapid API calls
     document.getElementById('filter-category')?.addEventListener('change', () => this.loadExpenses());
-    document.getElementById('search-input')?.addEventListener('input', () => this.loadExpenses());
+    document.getElementById('search-input')?.addEventListener('input', () => {
+      clearTimeout(this._searchTimer);
+      this._searchTimer = setTimeout(() => this.loadExpenses(), 400);
+    });
   }
 
   async loadExpenses() {
@@ -112,16 +115,24 @@ export class ExpenseManager {
     const payload = {
       amount: parseFloat(document.getElementById('exp-amount').value),
       category: document.getElementById('exp-category').value,
-      description: document.getElementById('exp-description').value,
+      description: document.getElementById('exp-description').value.trim(),
       date: document.getElementById('exp-date').value,
       payment_method: document.getElementById('exp-payment').value,
-      notes: document.getElementById('exp-notes').value || null
+      notes: document.getElementById('exp-notes').value.trim() || null
     };
 
-    if (payload.amount <= 0) {
+    if (payload.amount <= 0 || isNaN(payload.amount)) {
       this.showToast('Amount must be greater than zero', 'warning');
       return;
     }
+
+    if (!payload.description) {
+      this.showToast('Description is required', 'warning');
+      return;
+    }
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving...'; }
 
     try {
       if (this.editingId) {
@@ -136,6 +147,8 @@ export class ExpenseManager {
       window.app?.refreshAll();
     } catch (err) {
       this.showToast(err.message || 'Operation failed', 'danger');
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Save Expense'; }
     }
   }
 
