@@ -1,4 +1,4 @@
-# AI Budget & Expense Advisor (Full Stack + Gemini AI + RAG)
+# 💰 AI Budget & Expense Advisor
 
 A production-grade personal finance web application where users can manage daily expenses, set and track monthly budgets, visualize spending analytics via interactive charts, and consult an AI assistant powered by **Retrieval-Augmented Generation (RAG)** using **Google Gemini 2.5 Flash** (`google.genai` SDK), **PostgreSQL**, and **ChromaDB**.
 
@@ -15,7 +15,7 @@ A production-grade personal finance web application where users can manage daily
 
 ---
 
-## 🏗️ Architecture Overview
+# 🏗️ Architecture
 
 ```text
 User (Browser) <---> Vanilla JS Frontend (Fetch API + Chart.js)
@@ -52,11 +52,13 @@ AI Response
 
 ---
 
-## 📁 Folder Structure
+# 🔄 RAG Pipeline
 
 ```text
 AI-Budget-Expense-Advisor/
+│
 ├── backend/
+│   │
 │   ├── app/
 │   │   ├── main.py                     # App factory & FastAPI startup
 │   │   ├── core/                       # Configuration, DB engine, logger & security
@@ -77,9 +79,18 @@ AI-Budget-Expense-Advisor/
 │   └── .env                            # ⚠️ Not committed — add GEMINI_API_KEY & DATABASE_URL
 │
 ├── frontend/
-│   ├── index.html                      # Single Page Application HTML
-│   ├── css/                            # Glassmorphism dark mode design system
-│   └── js/                             # ES6 modular components (charts, chat, budget)
+│   ├── index.html
+│   ├── css/
+│   └── js/
+│       ├── app.js
+│       ├── api.js
+│       ├── authManager.js
+│       ├── expenseManager.js
+│       ├── budgetTracker.js
+│       ├── analyticsView.js
+│       ├── chartManager.js
+│       ├── chatWidget.js
+│       └── store.js
 │
 ├── render.yaml                         # Render deployment specification
 ├── README.md
@@ -88,7 +99,7 @@ AI-Budget-Expense-Advisor/
 
 ---
 
-## 🛠️ Tech Stack
+# 🔑 Authentication Flow
 
 - **Frontend**: HTML5, CSS3 (Vanilla Glassmorphism), JavaScript (ES6 Modules), Chart.js
 - **Backend**: Python 3.11+, FastAPI, SQLAlchemy 2.0, PostgreSQL / SQLite, Pydantic v2, Passlib (Argon2), PyJWT
@@ -97,15 +108,13 @@ AI-Budget-Expense-Advisor/
 
 ---
 
-## 🚀 Setup & Execution Guide
+# 💸 Expense Flow
 
 ### Prerequisites
 1. **Python 3.11+** installed.
 2. **PostgreSQL** or local SQLite.
 3. A **Google Gemini API key** — get one free at [aistudio.google.com](https://aistudio.google.com/app/apikey).
 
-### Step 1: Configure Environment
-Copy `.env.example` to `.env` inside the `backend/` folder and add your Gemini API key:
 ```bash
 cp backend/.env.example backend/.env
 ```
@@ -116,24 +125,163 @@ GEMINI_MODEL="gemini-2.5-flash"
 DATABASE_URL="postgresql+psycopg2://expense_user:password@localhost:5432/expense_tracker"
 ```
 
-### Step 2: Install Backend Dependencies
+---
+
+# 🗃️ Database Schema
+
+## Users
+
+```text
+users
+├── id
+├── full_name
+├── email
+├── password_hash
+├── created_at
+└── updated_at
+```
+
+## Expenses
+
+```text
+expenses
+├── id
+├── user_id
+├── amount
+├── category
+├── description
+├── date
+├── payment_method
+├── notes
+├── created_at
+└── updated_at
+```
+
+## Budgets
+
+```text
+budgets
+├── id
+├── user_id
+├── monthly_budget
+├── month
+├── year
+├── created_at
+└── updated_at
+```
+
+---
+
+# 🗂️ PostgreSQL vs ChromaDB
+
+| PostgreSQL           | ChromaDB                 |
+| -------------------- | ------------------------ |
+| Users                | Expense document vectors |
+| Exact expenses       | Semantic representations |
+| Budgets              | Expense metadata         |
+| Transactions         | Similarity search        |
+| SQL aggregation      | Vector retrieval         |
+| Relational integrity | RAG context              |
+
+Both databases have different responsibilities.
+
+**PostgreSQL handles structured source-of-truth financial data, while ChromaDB supports semantic retrieval for the RAG pipeline.**
+
+---
+
+# ⚙️ Environment Variables
+
+Create a `.env` file inside `backend/`.
+
+Example:
+
+```env
+APP_NAME=AI Budget & Expense Advisor
+APP_ENV=development
+DEBUG=true
+
+HOST=127.0.0.1
+PORT=8000
+
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+
+DATABASE_URL=postgresql://username:password@localhost:5432/expense_tracker
+TEST_DATABASE_URL=postgresql://username:password@localhost:5432/expense_tracker_test
+
+CHROMA_DB_DIR=./vector_store/chroma_db
+CHROMA_COLLECTION_NAME=expense_vectors
+
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.5-flash
+
+LLM_PROVIDER=gemini
+
+ALLOWED_ORIGINS=http://127.0.0.1:8080
+```
+
+**Never commit the real `.env` file or API keys.**
+
+---
+
+# 🚀 Installation
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/saumyap48/AI-Budget-Expense-Advisor.git
+
+cd AI-Budget-Expense-Advisor
+```
+
+## 2. Create Virtual Environment
+
 ```bash
 cd backend
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
 
+python -m venv venv
+```
+
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+### Linux/macOS
+
+```bash
+source venv/bin/activate
+```
+
+## 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### Step 3: Launch FastAPI Backend
+## 4. Configure Environment
+
+Create:
+
+```text
+backend/.env
+```
+
+Configure your PostgreSQL database and Gemini API credentials.
+
+## 5. Run Database Migrations
+
+```bash
+python -m alembic upgrade head
+```
+
+## 6. Start Backend
+
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
-- API Documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
-- Health Check: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
 
 ### Step 4: Render Cloud Deployment
 Render deployment automatically binds to `$PORT` and initializes PostgreSQL connection pooling via:
@@ -143,6 +291,82 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ---
 
-## 📄 License
+# 📈 Performance & Reliability
+
+The application uses:
+
+* PostgreSQL indexes
+* SQL aggregation
+* Pagination
+* Vector similarity search
+* Modular service architecture
+* Automated testing
+* Database migration management with Alembic
+* Expense/vector synchronization on create, update, and delete operations
+
+---
+
+# 📸 Screenshots
+
+Add screenshots of:
+
+* Dashboard
+* Expense Management
+* Budget Tracker
+* Analytics
+* AI Financial Advisor
+
+Example:
+
+```markdown
+![Dashboard](screenshots/dashboard.png)
+![Expenses](screenshots/expenses.png)
+![Analytics](screenshots/analytics.png)
+![AI Advisor](screenshots/ai-advisor.png)
+```
+
+---
+
+# 📄 Resume Description
+
+### Short Version
+
+> Built an AI-powered Personal Finance & Expense Advisor using FastAPI, PostgreSQL, SQLAlchemy, ChromaDB, and Google Gemini. Implemented a Retrieval-Augmented Generation (RAG) pipeline that retrieves user-specific expense context and financial metrics to generate personalized AI-powered financial insights.
+
+### Technical Version
+
+> Developed a full-stack personal finance platform using Vanilla JavaScript and FastAPI, implementing JWT authentication, PostgreSQL-based expense and budget management, ChromaDB vector retrieval, and a custom RAG pipeline. Integrated Google Gemini 2.5 Flash to generate context-aware financial responses while enforcing user-level vector isolation and automatic expense-vector synchronization.
+
+---
+
+# 🎤 Interview Explanation
+
+### "Does your project use RAG?"
+
+> **Yes. My project uses a custom Retrieval-Augmented Generation pipeline. When a user asks a financial question, the system retrieves relevant expense documents from ChromaDB using semantic similarity and also retrieves structured financial metrics such as spending totals and budget information from PostgreSQL. RAGService combines this context into a prompt and sends it to Gemini 2.5 Flash, which generates the final personalized response.**
+
+### "Why did you use RAG?"
+
+> **The LLM does not inherently know the user's private expense history. RAG allows the application to retrieve relevant user-specific information first and provide that context to the LLM, allowing the response to be grounded in the application's actual financial data.**
+
+### "Why PostgreSQL and ChromaDB?"
+
+> **PostgreSQL is used for structured and transactional financial data, while ChromaDB is used for semantic vector retrieval. PostgreSQL provides exact calculations and relational integrity, while ChromaDB helps retrieve relevant expense context for the RAG pipeline.**
+
+### "Which LLM are you using?"
+
+> **The active LLM in my project is Google Gemini 2.5 Flash. It receives the context retrieved by my RAG pipeline and generates the final financial response.**
+
+---
+
+# 🌐 Repository
+
+GitHub repository:
+
+https://github.com/saumyap48/AI-Budget-Expense-Advisor
+
+---
+
+# 📜 License
 
 MIT License
