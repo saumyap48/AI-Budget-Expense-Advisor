@@ -2,17 +2,9 @@ services:
   - type: web
     name: ai-budget-expense-advisor
     runtime: python
-    # rootDir is intentionally NOT set here.
-    # All commands use explicit repo-relative paths from the repo root so
-    # that deployment works whether the service was created via Blueprint
-    # or manually in the Render Dashboard (without Root Directory set).
-    buildCommand: >-
-      pip install --upgrade pip &&
-      pip install -r backend/requirements.txt &&
-      cd backend &&
-      python -m alembic upgrade head ||
-      echo "WARNING: Alembic migration skipped — ensure DATABASE_URL is set in Render Dashboard environment variables"
-    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python -m alembic upgrade head || echo "WARNING: Alembic migration skipped — ensure DATABASE_URL is set in Render Dashboard environment variables"
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
