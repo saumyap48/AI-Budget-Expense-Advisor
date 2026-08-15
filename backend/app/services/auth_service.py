@@ -4,7 +4,7 @@ from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin
 from app.repositories.user_repository import UserRepository
 from app.core.security import hash_password, verify_password, create_access_token
-from app.core.exceptions import ValidationException, AuthenticationException
+from app.core.exceptions import ValidationException, AuthenticationException, NotFoundException
 from app.core.logging import logger
 
 
@@ -41,8 +41,12 @@ class AuthService:
         user_repo = UserRepository(db)
 
         user = user_repo.get_by_email(data.email)
-        if not user or not verify_password(data.password, user.password_hash):
-            logger.warning(f"Login failed for email '{data.email}': Invalid credentials.")
+        if not user:
+            logger.warning(f"Login failed for email '{data.email}': Account not found.")
+            raise NotFoundException("Account not found. Please register first.")
+
+        if not verify_password(data.password, user.password_hash):
+            logger.warning(f"Login failed for email '{data.email}': Invalid password.")
             raise AuthenticationException("Invalid email or password.")
 
         access_token = create_access_token({"sub": str(user.id), "email": user.email})

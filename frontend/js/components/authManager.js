@@ -18,6 +18,9 @@ export class AuthManager {
     this.displayEmail = document.getElementById('user-display-email');
     this.btnLogout = document.getElementById('btn-logout');
 
+    // Account-not-found modal
+    this.accountNotFoundModal = document.getElementById('account-not-found-modal');
+
     this.bindEvents();
     this.checkAuthState();
   }
@@ -54,6 +57,20 @@ export class AuthManager {
     // Forgot password placeholder
     document.getElementById('auth-forgot-password-placeholder')?.addEventListener('click', () => {
       this.showToast('Reset password link has been sent to your email (Demo only)', 'info');
+    });
+
+    // Account-not-found modal buttons
+    document.getElementById('anf-register-btn')?.addEventListener('click', () => {
+      this.hideAccountNotFoundModal();
+      this.showAuthOverlay();
+      this.switchTab('register');
+    });
+    const closeAnf = () => this.hideAccountNotFoundModal();
+    document.getElementById('anf-close')?.addEventListener('click', closeAnf);
+    document.getElementById('anf-cancel-btn')?.addEventListener('click', closeAnf);
+    // Close on backdrop click
+    this.accountNotFoundModal?.addEventListener('click', (e) => {
+      if (e.target === this.accountNotFoundModal) closeAnf();
     });
   }
 
@@ -111,7 +128,13 @@ export class AuthManager {
         window.app?.refreshAll();
       }
     } catch (err) {
-      this.showToast(err.message || 'Invalid email or password.', 'danger');
+      // Detect "account not found" from the backend's NotFoundException (HTTP 404)
+      const msg = err.message || '';
+      if (msg.toLowerCase().includes('account not found') || msg.toLowerCase().includes('please register')) {
+        this.showAccountNotFoundModal();
+      } else {
+        this.showToast(msg || 'Invalid email or password.', 'danger');
+      }
     } finally {
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Sign In →'; }
     }
@@ -198,6 +221,14 @@ export class AuthManager {
     localStorage.removeItem('user');
     this.showAuthOverlay();
     this.showToast('Logged out successfully.', 'info');
+  }
+
+  showAccountNotFoundModal() {
+    this.accountNotFoundModal?.classList.add('active');
+  }
+
+  hideAccountNotFoundModal() {
+    this.accountNotFoundModal?.classList.remove('active');
   }
 
   showToast(msg, type = 'info') {

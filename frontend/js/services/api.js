@@ -32,7 +32,10 @@ export class ApiService {
       const response = await fetch(url, config);
       clearTimeout(timeoutId);
 
-      if (response.status === 401) {
+      // 401 interceptor: fires session-expired logout for authenticated routes.
+      // Skip for auth endpoints (login/register) that legitimately return 401 for
+      // bad credentials — let the caller handle the error instead.
+      if (response.status === 401 && !options.skipAuthRedirect) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.dispatchEvent(new CustomEvent('auth-unauthorized'));
@@ -90,7 +93,8 @@ export class ApiService {
   static login(email, password) {
     return this.request('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
+      skipAuthRedirect: true   // 401 = wrong password, not session expiry
     });
   }
 
