@@ -48,26 +48,33 @@ export class ApiService {
         data = JSON.parse(text);
       } catch (jsonErr) {
         if (!response.ok) {
-          throw new Error(`Server error (${response.status}): ${text.substring(0, 150) || response.statusText}`);
+          const err = new Error(`Server error (${response.status}): ${text.substring(0, 150) || response.statusText}`);
+          err.status = response.status;
+          throw err;
         }
         throw new Error('Invalid JSON response received from server.');
       }
 
       if (!response.ok) {
         let errorMsg = '';
-        if (data.error?.details && data.message && data.message !== data.error.details) {
-          errorMsg = `${data.message}: ${data.error.details}`;
-        } else {
-          errorMsg = data.error?.details || data.message;
+
+        // Priority 1: Check data.detail (FastAPI standard string or validation array)
+        if (data.detail) {
+          if (typeof data.detail === 'string') {
+            errorMsg = data.detail;
+          } else if (Array.isArray(data.detail)) {
+            errorMsg = data.detail.map(d => (typeof d === 'string' ? d : d.msg || d.message || JSON.stringify(d))).join('; ');
+          } else if (typeof data.detail === 'object') {
+            errorMsg = data.detail.message || data.detail.msg || JSON.stringify(data.detail);
+          }
         }
 
-        if (!errorMsg && data.detail) {
-          if (Array.isArray(data.detail)) {
-            errorMsg = data.detail.map(d => (typeof d === 'string' ? d : d.msg || d.message || JSON.stringify(d))).join('; ');
-          } else if (typeof data.detail === 'string') {
-            errorMsg = data.detail;
-          } else if (typeof data.detail === 'object') {
-            errorMsg = JSON.stringify(data.detail);
+        // Priority 2: Check custom API error format if detail is not plain string
+        if (!errorMsg) {
+          if (data.error?.details && data.message && data.message !== data.error.details) {
+            errorMsg = `${data.message}: ${data.error.details}`;
+          } else {
+            errorMsg = data.error?.details || data.message;
           }
         }
 
@@ -75,7 +82,10 @@ export class ApiService {
           errorMsg = `API request failed with status ${response.status}`;
         }
 
-        throw new Error(errorMsg);
+        const err = new Error(errorMsg);
+        err.status = response.status;
+        err.data = data;
+        throw err;
       }
 
       return data;
@@ -106,7 +116,8 @@ export class ApiService {
         email,
         password,
         confirm_password: confirmPassword
-      })
+      }),
+      skipAuthRedirect: true
     });
   }
 

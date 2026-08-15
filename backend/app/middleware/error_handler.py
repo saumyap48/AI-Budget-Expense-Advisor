@@ -42,6 +42,7 @@ async def domain_exception_handler(request: Request, exc: DomainException):
         status_code=status_code,
         headers=_cors_headers(request),
         content={
+            "detail": exc.message,
             "success": False,
             "data": None,
             "message": exc.message,

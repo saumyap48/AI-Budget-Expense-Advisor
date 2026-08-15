@@ -18,9 +18,6 @@ export class AuthManager {
     this.displayEmail = document.getElementById('user-display-email');
     this.btnLogout = document.getElementById('btn-logout');
 
-    // Account-not-found modal
-    this.accountNotFoundModal = document.getElementById('account-not-found-modal');
-
     this.bindEvents();
     this.checkAuthState();
   }
@@ -57,20 +54,6 @@ export class AuthManager {
     // Forgot password placeholder
     document.getElementById('auth-forgot-password-placeholder')?.addEventListener('click', () => {
       this.showToast('Reset password link has been sent to your email (Demo only)', 'info');
-    });
-
-    // Account-not-found modal buttons
-    document.getElementById('anf-register-btn')?.addEventListener('click', () => {
-      this.hideAccountNotFoundModal();
-      this.showAuthOverlay();
-      this.switchTab('register');
-    });
-    const closeAnf = () => this.hideAccountNotFoundModal();
-    document.getElementById('anf-close')?.addEventListener('click', closeAnf);
-    document.getElementById('anf-cancel-btn')?.addEventListener('click', closeAnf);
-    // Close on backdrop click
-    this.accountNotFoundModal?.addEventListener('click', (e) => {
-      if (e.target === this.accountNotFoundModal) closeAnf();
     });
   }
 
@@ -112,9 +95,16 @@ export class AuthManager {
 
   async handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    const email = emailInput?.value.trim() || '';
+    const password = passwordInput?.value || '';
     const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    if (!email || !password) {
+      this.showToast('Please enter your email and password.', 'warning');
+      return;
+    }
 
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Signing in...'; }
 
@@ -128,10 +118,13 @@ export class AuthManager {
         window.app?.refreshAll();
       }
     } catch (err) {
-      // Detect "account not found" from the backend's NotFoundException (HTTP 404)
       const msg = err.message || '';
-      if (msg.toLowerCase().includes('account not found') || msg.toLowerCase().includes('please register')) {
-        this.showAccountNotFoundModal();
+      const lowerMsg = msg.toLowerCase();
+
+      if (err.status === 404 || lowerMsg.includes('not registered') || lowerMsg.includes('not found') || lowerMsg.includes('please register')) {
+        this.showToast('⚠️ Account not registered. Please register first.', 'warning');
+      } else if (err.status === 401 || lowerMsg.includes('invalid email or password')) {
+        this.showToast('⚠️ Invalid email or password.', 'danger');
       } else {
         this.showToast(msg || 'Invalid email or password.', 'danger');
       }
@@ -142,11 +135,21 @@ export class AuthManager {
 
   async handleRegister(e) {
     e.preventDefault();
-    const fullName = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
-    const confirmPassword = document.getElementById('reg-confirm-password').value;
+    const nameInput = document.getElementById('reg-name');
+    const emailInput = document.getElementById('reg-email');
+    const passwordInput = document.getElementById('reg-password');
+    const confirmInput = document.getElementById('reg-confirm-password');
+
+    const fullName = nameInput?.value.trim() || '';
+    const email = emailInput?.value.trim() || '';
+    const password = passwordInput?.value || '';
+    const confirmPassword = confirmInput?.value || '';
     const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    if (!fullName || !email || !password || !confirmPassword) {
+      this.showToast('Please fill in all registration fields.', 'warning');
+      return;
+    }
 
     if (password !== confirmPassword) {
       this.showToast('Passwords do not match.', 'danger');
@@ -162,15 +165,33 @@ export class AuthManager {
 
     try {
       const res = await ApiService.register(fullName, email, password, confirmPassword);
-      if (res.success && res.data) {
-        localStorage.setItem('token', res.data.access_token);
-        this.setCurrentUser(res.data.user);
-        this.hideAuthOverlay();
-        this.showToast('Registration successful! Welcome!', 'success');
-        window.app?.refreshAll();
+      if (res.success) {
+        this.showToast('✅ Registration successful! Please login.', 'success');
+        
+        // Clear registration form & pre-fill email in login tab
+        if (this.registerForm) this.registerForm.reset();
+        const loginEmailInput = document.getElementById('login-email');
+        if (loginEmailInput) loginEmailInput.value = email;
+
+        // Switch to login tab so user can enter password and log in
+        this.switchTab('login');
+        document.getElementById('login-password')?.focus();
       }
     } catch (err) {
-      this.showToast(err.message || 'Registration failed.', 'danger');
+      const msg = err.message || '';
+      const lowerMsg = msg.toLowerCase();
+
+      if (err.status === 409 || err.status === 400 || lowerMsg.includes('already exists') || lowerMsg.includes('already registered')) {
+        this.showToast('⚠️ Account already exists. Please login.', 'warning');
+        
+        const loginEmailInput = document.getElementById('login-email');
+        if (loginEmailInput) loginEmailInput.value = email;
+
+        this.switchTab('login');
+        document.getElementById('login-password')?.focus();
+      } else {
+        this.showToast(msg || 'Registration failed.', 'danger');
+      }
     } finally {
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Create Account →'; }
     }
@@ -223,14 +244,6 @@ export class AuthManager {
     this.showToast('Logged out successfully.', 'info');
   }
 
-  showAccountNotFoundModal() {
-    this.accountNotFoundModal?.classList.add('active');
-  }
-
-  hideAccountNotFoundModal() {
-    this.accountNotFoundModal?.classList.remove('active');
-  }
-
   showToast(msg, type = 'info') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -240,6 +253,6 @@ export class AuthManager {
     toast.innerHTML = `<span>${msg}</span>`;
     container.appendChild(toast);
 
-    setTimeout(() => toast.remove(), 4000);
+    setTimeout(() => toast.remove(), 4500);
   }
 }

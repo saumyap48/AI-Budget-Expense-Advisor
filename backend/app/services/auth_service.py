@@ -19,7 +19,7 @@ class AuthService:
         existing_user = user_repo.get_by_email(data.email)
         if existing_user:
             logger.warning(f"Registration failed: Email '{data.email}' already registered.")
-            raise ValidationException("An account with this email address already exists.")
+            raise ValidationException("Account already exists. Please login.")
 
         # Hash password and create user
         pw_hash = hash_password(data.password)
@@ -42,8 +42,8 @@ class AuthService:
 
         user = user_repo.get_by_email(data.email)
         if not user:
-            logger.warning(f"Login failed for email '{data.email}': Account not found.")
-            raise NotFoundException("Account not found. Please register first.")
+            logger.warning(f"Login failed for email '{data.email}': Account not registered.")
+            raise NotFoundException("Account not registered. Please register first.")
 
         if not verify_password(data.password, user.password_hash):
             logger.warning(f"Login failed for email '{data.email}': Invalid password.")

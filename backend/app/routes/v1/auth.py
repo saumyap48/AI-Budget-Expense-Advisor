@@ -16,7 +16,7 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
     user, access_token = AuthService.register_user(db, data)
     user_response = UserResponse.model_validate(user)
     token_obj = Token(access_token=access_token, token_type="bearer", user=user_response)
-    return ApiResponse(success=True, data=token_obj, message="User registered successfully")
+    return ApiResponse(success=True, data=token_obj, message="Registration successful! Please login.")
 
 
 @router.post("/login", response_model=ApiResponse[Token])
