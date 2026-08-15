@@ -19,6 +19,6 @@ class ChatResponse(BaseModel):
     question: str
     answer: str
     retrieved_documents: List[ContextDocument] = []
-    model_used: str = "llama3"
+    model_used: str = "gemini-2.5-flash"
     is_fallback: bool = False
     processing_time_ms: float = 0.0
