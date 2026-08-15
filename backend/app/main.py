@@ -21,6 +21,17 @@ from app.routes.api_v1 import api_v1_router
 async def lifespan(app: FastAPI):
     """Startup/shutdown lifecycle managed by uvicorn after socket bind."""
     # ── Startup ──────────────────────────────────────────────────────────────
+    raw_env_url = os.getenv("DATABASE_URL")
+    if raw_env_url:
+        from app.core.database import mask_db_url
+        logger.info(f"DATABASE_URL detected in environment: {mask_db_url(raw_env_url)}")
+    else:
+        logger.warning(
+            "DATABASE_URL environment variable is NOT set in environment! "
+            "Falling back to default database setting. "
+            "IMPORTANT: In Render Dashboard, set DATABASE_URL to your Render PostgreSQL Internal Database URL."
+        )
+
     # Database table creation — deferred so the port is already bound.
     try:
         Base.metadata.create_all(bind=engine)

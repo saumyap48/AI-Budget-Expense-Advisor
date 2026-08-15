@@ -23,10 +23,8 @@ if config.config_file_name is not None:
 _raw_url = os.getenv("DATABASE_URL")
 
 if not _raw_url:
-    raise RuntimeError(
-        "DATABASE_URL environment variable is not set. "
-        "Set it in the Render dashboard (or your local .env file)."
-    )
+    from app.core.config import settings
+    _raw_url = settings.DATABASE_URL
 
 if _raw_url.startswith("postgres://"):
     _raw_url = _raw_url.replace("postgres://", "postgresql+psycopg2://", 1)
