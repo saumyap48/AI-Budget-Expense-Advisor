@@ -2,23 +2,33 @@ services:
   - type: web
     name: ai-budget-expense-advisor
     runtime: python
-    rootDir: backend
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python -m alembic upgrade head || echo "WARNING: alembic migration step skipped (DATABASE_URL may not be configured yet - set it in Render Dashboard)"
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # rootDir is intentionally NOT set here.
+    # All commands use explicit repo-relative paths from the repo root so
+    # that deployment works whether the service was created via Blueprint
+    # or manually in the Render Dashboard (without Root Directory set).
+    buildCommand: >-
+      pip install --upgrade pip &&
+      pip install -r backend/requirements.txt &&
+      cd backend &&
+      python -m alembic upgrade head ||
+      echo "WARNING: Alembic migration skipped — ensure DATABASE_URL is set in Render Dashboard environment variables"
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
       # -----------------------------------------------------------------------
-      # Required secrets: must be set manually in the Render Dashboard
+      # Required secrets — set these manually in the Render Dashboard.
+      # These are marked sync:false so Render will NOT try to auto-populate them.
       # -----------------------------------------------------------------------
       - key: DATABASE_URL
-        sync: false   # Paste your Render PostgreSQL Internal Database URL here
+        sync: false   # Value: your Render PostgreSQL Internal Database URL
       - key: SECRET_KEY
-        sync: false   # Any long random string (e.g. openssl rand -hex 32)
+        sync: false   # Value: any 32+ char random string (e.g. openssl rand -hex 32)
       - key: GEMINI_API_KEY
-        sync: false   # Your Google AI Studio API key
+        sync: false   # Value: your Google AI Studio API key
       # -----------------------------------------------------------------------
-      # Optional — sensible production defaults (override in Dashboard if needed)
+      # Optional — sensible production defaults baked into the YAML.
+      # Override any of these in the Render Dashboard if needed.
       # -----------------------------------------------------------------------
       - key: GEMINI_MODEL
         value: "gemini-2.5-flash"
