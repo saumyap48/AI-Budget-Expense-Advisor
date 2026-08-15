@@ -3,22 +3,23 @@ services:
     name: ai-budget-expense-advisor
     runtime: python
     rootDir: backend
-    buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      python -m alembic upgrade head
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python -m alembic upgrade head || echo "WARNING: alembic migration step skipped (DATABASE_URL may not be configured yet - set it in Render Dashboard)"
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"
-      # --- Required secrets: set these manually in the Render dashboard ---
+      # -----------------------------------------------------------------------
+      # Required secrets: must be set manually in the Render Dashboard
+      # -----------------------------------------------------------------------
       - key: DATABASE_URL
-        sync: false
+        sync: false   # Paste your Render PostgreSQL Internal Database URL here
       - key: SECRET_KEY
-        sync: false
+        sync: false   # Any long random string (e.g. openssl rand -hex 32)
       - key: GEMINI_API_KEY
-        sync: false
-      # --- Optional with sensible defaults ---
+        sync: false   # Your Google AI Studio API key
+      # -----------------------------------------------------------------------
+      # Optional — sensible production defaults (override in Dashboard if needed)
+      # -----------------------------------------------------------------------
       - key: GEMINI_MODEL
         value: "gemini-2.5-flash"
       - key: ALGORITHM

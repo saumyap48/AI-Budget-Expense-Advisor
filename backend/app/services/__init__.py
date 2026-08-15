@@ -1,3 +1,3 @@
 """
-Services package containing core business logic, vector indexing, Ollama LLM client, and RAG pipeline.
+Services package: PostgreSQL + ChromaDB/fallback vector store → RAGService → Gemini 2.5 Flash.
 """
